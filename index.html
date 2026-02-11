@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Letter For You</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 50%, #ffecd2 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        /* Particles Background */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .heart {
+            position: absolute;
+            font-size: 20px;
+            opacity: 0.3;
+            animation: float 15s infinite ease-in-out;
+        }
+        
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0) rotate(0deg);
+            }
+            50% {
+                transform: translateY(-50px) rotate(180deg);
+            }
+        }
+        
+        /* Main Container */
+        .container {
+            position: relative;
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2;
+            opacity: 0;
+            animation: fadeIn 1.5s ease-out forwards;
+        }
+        
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+        
+        /* Photo Gallery */
+        .photo-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .photo {
+            position: absolute;
+            width: 200px;
+            height: 250px;
+            background: white;
+            padding: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            cursor: grab;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            filter: blur(0.5px);
+            z-index: 10;
+        }
+        
+        .photo:active {
+            cursor: grabbing;
+        }
+        
+        .photo:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.25);
+            filter: blur(0);
+            z-index: 100;
+        }
+        
+        .photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .photo.scattered {
+            filter: blur(0);
+        }
+        
+        /* Hidden Letter */
+        .letter {
+            position: absolute;
+            max-width: 600px;
+            width: 90%;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 50px 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 1.5s ease-out;
+            z-index: 5;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .letter.visible {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .letter h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5em;
+            color: #d4847c;
+            margin-bottom: 30px;
+            text-align: center;
+            font-style: italic;
+        }
+        
+        .letter p {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.2em;
+            line-height: 1.8;
+            color: #5a4a42;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .letter .signature {
+            text-align: right;
+            font-style: italic;
+            margin-top: 30px;
+            color: #8b7355;
+        }
+        
+        /* Controls */
+        .controls {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 1000;
+        }
+        
+        .btn {
+            padding: 15px 35px;
+            border: none;
+            border-radius: 50px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            color: #d4847c;
+            font-family: 'Inter', sans-serif;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+            border: 2px solid rgba(212, 132, 124, 0.3);
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.25);
+            background: white;
+        }
+        
+        .btn:active {
+            transform: translateY(-1px);
+        }
+        
+        .btn.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        /* Instruction Text */
+        .instruction {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 4;
+            pointer-events: none;
+            opacity: 0.8;
+            transition: opacity 0.5s ease;
+        }
+        
+        .instruction.hidden {
+            opacity: 0;
+        }
+        
+        .instruction h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2em;
+            color: white;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            margin-bottom: 10px;
+        }
+        
+        .instruction p {
+            font-family: 'Inter', sans-serif;
+            font-size: 1.1em;
+            color: white;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Music Player */
+        .music-player {
+            position: fixed;
+            top: 40px;
+            right: 40px;
+            z-index: 1000;
+        }
+        
+        .music-btn {
+            width: 60px;
+            height: 60px;
+            border: none;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            color: #d4847c;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid rgba(212, 132, 124, 0.3);
+        }
+        
+        .music-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.25);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .photo {
+                width: 150px;
+                height: 180px;
+            }
+            
+            .letter {
+                padding: 30px 25px;
+            }
+            
+            .letter h1 {
+                font-size: 2em;
+            }
+            
+            .letter p {
+                font-size: 1em;
+            }
+            
+            .instruction h2 {
+                font-size: 1.5em;
+            }
+            
+            .instruction p {
+                font-size: 0.9em;
+            }
+            
+            .controls {
+                bottom: 20px;
+            }
+            
+            .btn {
+                padding: 12px 25px;
+                font-size: 14px;
+            }
+            
+            .music-player {
+                top: 20px;
+                right: 20px;
+            }
+            
+            .music-btn {
+                width: 50px;
+                height: 50px;
+                font-size: 20px;
+            }
+        }
+        
+        /* Loading Animation */
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 50%, #ffecd2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            transition: opacity 0.5s ease-out;
+        }
+        
+        .loading.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .loading-text {
+            font-family: 'Playfair Display', serif;
+            font-size: 2em;
+            color: #d4847c;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 0.6;
+            }
+            50% {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div class="loading">
+        <div class="loading-text">Loading memories...</div>
+    </div>
+    
+    <!-- Particles -->
+    <div class="particles" id="particles"></div>
+    
+    <!-- Music Player -->
+    <div class="music-player">
+        <button class="music-btn" id="musicBtn" title="Play Music">
+            ▶
+        </button>
+    </div>
+    
+    <!-- Instruction -->
+    <div class="instruction" id="instruction">
+        <h2>Drag the photos to scatter them</h2>
+        <p>Move each memory to reveal what's hidden beneath...</p>
+    </div>
+    
+    <!-- Main Container -->
+    <div class="container">
+        <div class="photo-container" id="photoContainer">
+            <!-- Photos will be dynamically generated -->
+        </div>
+        
+        <!-- Hidden Letter -->
+        <div class="letter" id="letter">
+            <h1>To My Dearest</h1>
+            <p>Happy monthsary, love! Sooo, omg now nalang ulit ako nag send ganito haha 🥹 To my baby, know that I’am always grateful to you, and I just wanted to take this moment to thank you for everything. I may not say this often but, you never failed to make me feel special at all times. Even though we fought a lot (maldita ako, maldita karin) still, I appreciated the times you lowered your pride and approach me first even though kasalanan ko naman talaga 😭 I’am really thankful na ikaw kasama ko for better or worst.</p>
+            <p>You often say na you’re not perfect, but for me you’re more than that. Sobrang, sobra, sobra, sobra, pinaka, super perfect mo. We’re still young and we’re bound to make mistakes. I’am not expecting for us to be perfect, and loving you means loving the messy days too. </p>
+            <p>I pray that no matter how time changes, our hearts stay the same. If forever truly exists, I hope it has your name written beside mine. I loveee youuu sobra my lovee!</p>
+            <p class="signature">Forever yours ♡</p>
+        </div>
+    </div>
+    
+    <!-- Controls -->
+    <div class="controls">
+        <button class="btn hidden" id="replayBtn">Replay</button>
+    </div>
+    
+    <!-- Audio - Araw Araw by Ben&Ben -->
+    <audio id="bgMusic" loop>
+        <source src="araw-araw.mp3.mp3" type="audio/mpeg">
+    </audio>
+    
+    <script>
+        // Photo data with your uploaded images
+        const photoData = [
+            'images/3f54124d-4e16-4c9b-8a6b-8c576364af6a.jpg',
+            'images/3fa6af3f-c49c-4c32-9518-022d7946a13c.jpg',
+            'images/05df864c-8bfd-43e3-9e0f-dd76914fc990.jpg',
+            'images/63778222-b251-456f-9875-24b9f961c71d.jpg',
+            'images/71258200-62b8-4aa5-bd81-380ef5501fd3.jpg',
+            'images/b3161200-b624-4e65-8a15-fa916b39d523.jpg',
+            'images/c2ed3ce4-3398-4194-b6d2-5576d88788f6.jpg',
+            'images/d2d1de01-3bae-471c-b7d7-9cc5ae1b5e46.jpg',
+            'images/d679930c-e618-4e34-a53b-a0f4ec41b7a3.jpg',
+            'images/dff3df8c-cb1f-482e-b71c-d4576217af6c.jpg'
+        ];
+        
+        const photoContainer = document.getElementById('photoContainer');
+        const letter = document.getElementById('letter');
+        const replayBtn = document.getElementById('replayBtn');
+        const musicBtn = document.getElementById('musicBtn');
+        const bgMusic = document.getElementById('bgMusic');
+        const loading = document.querySelector('.loading');
+        const instruction = document.getElementById('instruction');
+        
+        let photos = [];
+        let isDragging = false;
+        let currentPhoto = null;
+        let scatteredCount = 0;
+        let photosInitialPositions = [];
+        
+        // Generate floating hearts
+        function createParticles() {
+            const particles = document.getElementById('particles');
+            for (let i = 0; i < 15; i++) {
+                const heart = document.createElement('div');
+                heart.className = 'heart';
+                heart.textContent = '♡';
+                heart.style.left = Math.random() * 100 + '%';
+                heart.style.top = Math.random() * 100 + '%';
+                heart.style.animationDelay = Math.random() * 15 + 's';
+                heart.style.animationDuration = (10 + Math.random() * 10) + 's';
+                particles.appendChild(heart);
+            }
+        }
+        
+        // Create photos
+        function createPhotos() {
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
+            const radius = Math.min(window.innerWidth, window.innerHeight) * 0.3;
+            
+            photoData.forEach((src, index) => {
+                const photo = document.createElement('div');
+                photo.className = 'photo';
+                photo.dataset.index = index;
+                photo.dataset.scattered = 'false';
+                
+                const img = document.createElement('img');
+                img.src = src;
+                img.alt = `Memory ${index + 1}`;
+                photo.appendChild(img);
+                
+                // Random position in cluster
+                const angle = (Math.PI * 2 * index) / photoData.length;
+                const r = radius * (0.5 + Math.random() * 0.5);
+                const x = centerX + Math.cos(angle) * r - 100;
+                const y = centerY + Math.sin(angle) * r - 125;
+                
+                photo.style.left = x + 'px';
+                photo.style.top = y + 'px';
+                photo.style.transform = `rotate(${(Math.random() - 0.5) * 30}deg)`;
+                photo.style.zIndex = 10 + index;
+                
+                // Store initial position
+                photosInitialPositions[index] = {
+                    x: x,
+                    y: y,
+                    rotation: (Math.random() - 0.5) * 30
+                };
+                
+                // Animation delay
+                photo.style.opacity = '0';
+                setTimeout(() => {
+                    photo.style.transition = 'opacity 0.8s ease-out';
+                    photo.style.opacity = '1';
+                }, index * 100);
+                
+                // Drag functionality
+                photo.addEventListener('mousedown', startDrag);
+                photo.addEventListener('touchstart', startDrag);
+                
+                photoContainer.appendChild(photo);
+                photos.push(photo);
+            });
+        }
+        
+        // Check if photo has been moved significantly from initial position
+        function hasBeenMoved(photo, currentX, currentY) {
+            const index = parseInt(photo.dataset.index);
+            const initial = photosInitialPositions[index];
+            const distance = Math.sqrt(
+                Math.pow(currentX - initial.x, 2) + 
+                Math.pow(currentY - initial.y, 2)
+            );
+            return distance > 150; // Must move at least 150px to count as scattered
+        }
+        
+        // Drag functions
+        function startDrag(e) {
+            isDragging = true;
+            currentPhoto = e.target.closest('.photo');
+            currentPhoto.style.zIndex = 1000;
+            
+            const moveHandler = (e) => {
+                if (!isDragging) return;
+                
+                const clientX = e.clientX || e.touches[0].clientX;
+                const clientY = e.clientY || e.touches[0].clientY;
+                
+                currentPhoto.style.left = (clientX - 100) + 'px';
+                currentPhoto.style.top = (clientY - 125) + 'px';
+            };
+            
+            const endHandler = () => {
+                if (currentPhoto) {
+                    const rect = currentPhoto.getBoundingClientRect();
+                    const centerX = rect.left + rect.width / 2;
+                    const centerY = rect.top + rect.height / 2;
+                    
+                    // Check if this photo has been moved enough and mark as scattered
+                    if (currentPhoto.dataset.scattered === 'false' && 
+                        hasBeenMoved(currentPhoto, parseFloat(currentPhoto.style.left), parseFloat(currentPhoto.style.top))) {
+                        currentPhoto.dataset.scattered = 'true';
+                        currentPhoto.classList.add('scattered');
+                        scatteredCount++;
+                        
+                        // Hide instruction after first drag
+                        if (scatteredCount === 1) {
+                            instruction.classList.add('hidden');
+                        }
+                        
+                        // Check if all photos are scattered
+                        if (scatteredCount === photoData.length) {
+                            setTimeout(() => {
+                                revealLetter();
+                            }, 500);
+                        }
+                    }
+                }
+                
+                isDragging = false;
+                document.removeEventListener('mousemove', moveHandler);
+                document.removeEventListener('touchmove', moveHandler);
+                document.removeEventListener('mouseup', endHandler);
+                document.removeEventListener('touchend', endHandler);
+            };
+            
+            document.addEventListener('mousemove', moveHandler);
+            document.addEventListener('touchmove', moveHandler);
+            document.addEventListener('mouseup', endHandler);
+            document.addEventListener('touchend', endHandler);
+            
+            e.preventDefault();
+        }
+        
+        // Reveal letter
+        function revealLetter() {
+            letter.classList.add('visible');
+            replayBtn.classList.remove('hidden');
+        }
+        
+        // Replay function
+        function replay() {
+            scatteredCount = 0;
+            letter.classList.remove('visible');
+            replayBtn.classList.add('hidden');
+            instruction.classList.remove('hidden');
+            
+            // Reset photos
+            photos.forEach((photo, index) => {
+                photo.dataset.scattered = 'false';
+                photo.classList.remove('scattered');
+                photo.style.transition = 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
+                photo.style.left = photosInitialPositions[index].x + 'px';
+                photo.style.top = photosInitialPositions[index].y + 'px';
+                photo.style.transform = `rotate(${photosInitialPositions[index].rotation}deg)`;
+                photo.style.opacity = '1';
+            });
+            
+            // Remove transition after animation
+            setTimeout(() => {
+                photos.forEach(photo => {
+                    photo.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+                });
+            }, 800);
+        }
+        
+        // Music control
+        let isPlaying = false;
+        musicBtn.addEventListener('click', () => {
+            if (isPlaying) {
+                bgMusic.pause();
+                musicBtn.textContent = '▶';
+            } else {
+                bgMusic.play().catch(e => console.log('Audio play failed:', e));
+                musicBtn.textContent = '⏸';
+            }
+            isPlaying = !isPlaying;
+        });
+        
+        // Event listeners
+        replayBtn.addEventListener('click', replay);
+        
+        // Initialize
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                loading.classList.add('hidden');
+            }, 1500);
+            
+            createParticles();
+            createPhotos();
+        });
+        
+        // Handle window resize
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                if (scatteredCount === 0) {
+                    photos.forEach(photo => photo.remove());
+                    photos = [];
+                    photosInitialPositions = [];
+                    createPhotos();
+                }
+            }, 250);
+        });
+    </script>
+</body>
+</html>
